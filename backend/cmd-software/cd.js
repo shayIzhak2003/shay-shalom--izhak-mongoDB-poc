@@ -2,7 +2,8 @@
 const mongoose = require('mongoose');
 const readline = require('readline');
 const Table = require('cli-table3');
-const {Property} = require('../schema/mainSchema');
+const { Property } = require('../schema/mainSchema');
+
 // Connect to MongoDB
 mongoose.connect('mongodb://127.0.0.1:27017/propertiesDB', {
     useNewUrlParser: true,
@@ -14,19 +15,18 @@ mongoose.connect('mongodb://127.0.0.1:27017/propertiesDB', {
     process.exit(1);
 });
 
-
-
-
 // Setup readline interface
 const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
 });
 
+let propertiesCache = []; // Cache to store properties with indices
+
 function menu() {
     console.log(`\nChoose an action:\n`);
     console.log(`1. Add a property`);
-    console.log(`2. Update a property`);
+    console.log(`2. Update a property by index`);
     console.log(`3. Delete a property`);
     console.log(`4. View all properties`);
     console.log(`5. Exit\n`);
@@ -39,7 +39,7 @@ async function handleMenu(choice) {
             addProperty();
             break;
         case '2':
-            updateProperty();
+            await updatePropertyByIndex();
             break;
         case '3':
             deleteProperty();
@@ -73,7 +73,7 @@ async function addProperty() {
                                 isOpen: isOpen.toLowerCase() === 'true',
                                 waitingHours: parseInt(waitingHours, 10),
                             });
-                            await property.save(); // Use await instead of callback
+                            await property.save();
                             console.log('Property added successfully!');
                         } catch (err) {
                             console.error('Error adding property:', err.message);
@@ -86,8 +86,21 @@ async function addProperty() {
     });
 }
 
-async function updateProperty() {
-    rl.question('Enter the ID of the property to update: ', (id) => {
+async function updatePropertyByIndex() {
+    if (propertiesCache.length === 0) {
+        console.log('No properties available. Please view the properties first.');
+        menu();
+        return;
+    }
+
+    rl.question('Enter the index of the property to update: ', (index) => {
+        const property = propertiesCache[parseInt(index, 10)];
+        if (!property) {
+            console.log('Invalid index. Please try again.');
+            menu();
+            return;
+        }
+
         rl.question('Enter field to update (name, subject, description, isOpen, waitingHours): ', (field) => {
             rl.question(`Enter new value for ${field}: `, async (value) => {
                 try {
@@ -95,7 +108,7 @@ async function updateProperty() {
                         field === 'isOpen' ? value.toLowerCase() === 'true' :
                         field === 'waitingHours' ? parseInt(value, 10) :
                         value;
-                    await Property.findByIdAndUpdate(id, { [field]: updatedValue }, { new: true });
+                    await Property.findByIdAndUpdate(property._id, { [field]: updatedValue }, { new: true });
                     console.log('Property updated successfully!');
                 } catch (err) {
                     console.error('Error updating property:', err.message);
@@ -120,16 +133,18 @@ async function deleteProperty() {
 
 async function viewProperties() {
     try {
-        const properties = await Property.find(); // Use await instead of callback
+        const properties = await Property.find();
+        propertiesCache = properties; // Cache the properties for index-based operations
         if (properties.length === 0) {
             console.log('No properties found.');
         } else {
             const table = new Table({
-                head: ['ID', 'Name', 'Subject', 'Description', 'Is Open', 'Waiting Hours'],
+                head: ['Index', 'ID', 'Name', 'Subject', 'Description', 'Is Open', 'Waiting Hours'],
             });
 
-            properties.forEach((property) => {
+            properties.forEach((property, index) => {
                 table.push([
+                    index,
                     property._id.toString(),
                     property.name,
                     property.subject,
@@ -146,7 +161,6 @@ async function viewProperties() {
     }
     menu();
 }
-
 
 // Start the application
 menu();

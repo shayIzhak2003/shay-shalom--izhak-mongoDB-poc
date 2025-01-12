@@ -20,6 +20,7 @@ document.getElementById('fetchProperties').addEventListener('click', async () =>
             const propertyCard = document.createElement('div');
             propertyCard.classList.add('property-card');
             propertyCard.innerHTML = `
+                <h2>ID :${property._id}</h2>
                 <h2>${property.name}</h2>
                 <p><span>Subject:</span> ${property.subject}</p>
                 <p><span>Description:</span> ${property.description}</p>
