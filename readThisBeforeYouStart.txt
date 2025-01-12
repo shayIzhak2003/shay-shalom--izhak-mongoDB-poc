@@ -1,0 +1,9 @@
+this sofware is divaded to 2 main characters backend and frontend,
+and in the backend you will have a the software itself in the cmd-software directory (the path is backend ==> cmd-software)
+and the index.js file that will have just a path that will sand the data base data to the server.
+
+and you have frontend: 
+this is just an HTML & CSS & JavaScript app that takes that data fro, the server (index.js) and 
+display it in the browser.
+
+thank you for readin i hope you will enjoy :)
