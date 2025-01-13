@@ -34,3 +34,9 @@ document.getElementById('fetchProperties').addEventListener('click', async () =>
         propertiesContainer.innerHTML = '<p class="placeholder">Error loading properties. Please try again later.</p>';
     }
 });
+
+// ! make sure that the dat is currect
+
+const currentYear = document.getElementById('currentYear');
+
+currentYear.textContent = new Date().getFullYear();
